@@ -1,4 +1,5 @@
 ﻿using Azure.Messaging;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -52,16 +53,13 @@ namespace ProjectNewApi.Controllers
             {
                 return BadRequest();
             }
+            userObj.Role = "User";
             await _authContext.Users.AddAsync(userObj);
 
             await _authContext.SaveChangesAsync();
             return Ok( new { Message = "User registered"! });
         }
-        [HttpGet("getAll")]
-        public async Task<ActionResult<User>> GetAllUsers()
-        {
-            return Ok(await _authContext.Users.ToListAsync());
-        }
+
         private string CreateJwt(User user)
         {
             var jwtTokenHandler = new JwtSecurityTokenHandler();
@@ -69,6 +67,7 @@ namespace ProjectNewApi.Controllers
             var identity = new ClaimsIdentity(new Claim[]
             {
                 new Claim(ClaimTypes.Role, user.Role),
+                new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Name,$"{user.FirstName} {user.LastName}")
             });
 
@@ -82,6 +81,25 @@ namespace ProjectNewApi.Controllers
             };
             var token = jwtTokenHandler.CreateToken(tokenDescripter);
             return jwtTokenHandler.WriteToken(token);
+        }
+
+        [Authorize]
+        [HttpGet("getAllUsers")]
+        public async Task<ActionResult<User>> GetAllUsers()
+        {
+            return Ok(await _authContext.Users.ToListAsync());
+        }
+
+        [Authorize]
+        [HttpGet("getUserByEmail")]
+        public async Task<ActionResult<User>> GetUserByEmail(string email)
+        {
+            var user = await _authContext.Users.FirstOrDefaultAsync(x => x.Email == email);
+            if(user == null)
+            {
+                return Ok(new { Message = "There is no registered user with this email!" });
+            }
+            return Ok(user);
         }
     }
 }
