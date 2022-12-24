@@ -53,7 +53,12 @@ namespace ProjectNewApi.Controllers
             {
                 return BadRequest();
             }
+            if(await CheckEmail(userObj.Email))
+            {
+                return BadRequest(new {Message="Email already registered!"});
+            }
             userObj.Role = "User";
+            userObj.Token = "";
             await _authContext.Users.AddAsync(userObj);
 
             await _authContext.SaveChangesAsync();
@@ -101,5 +106,7 @@ namespace ProjectNewApi.Controllers
             }
             return Ok(user);
         }
+        private Task<bool> CheckEmail(string email) 
+            =>_authContext.Users.AnyAsync(x => x.Email == email);
     }
 }
