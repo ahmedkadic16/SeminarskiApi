@@ -33,14 +33,17 @@ namespace ProjectNewApi
         {
            
             services.AddControllers();
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "ProjectNewApi", Version = "v1" });
             });
+
             services.AddDbContext<AppDbContext>(option=> 
             {
                 option.UseSqlServer(Configuration.GetConnectionString("SqlServerConnStar"));
             });
+
             services.AddCors(option=>
             {
                 option.AddPolicy("MyPolicy", builder =>
