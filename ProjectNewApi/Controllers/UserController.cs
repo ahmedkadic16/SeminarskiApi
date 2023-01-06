@@ -46,6 +46,7 @@ namespace ProjectNewApi.Controllers
             });
         }
 
+
         [HttpPost("register")]
         public async Task<IActionResult> RegisterUser([FromBody] User userObj)
         {
@@ -57,11 +58,13 @@ namespace ProjectNewApi.Controllers
             {
                 return BadRequest(new {Message="Email already registered!"});
             }
+
             userObj.Role = "User";
             userObj.Token = "";
-            await _authContext.Users.AddAsync(userObj);
 
+            await _authContext.Users.AddAsync(userObj);
             await _authContext.SaveChangesAsync();
+
             return Ok( new { Message = "User registered"! });
         }
 
